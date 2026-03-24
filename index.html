@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUBGM FAQ 관리 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8eaf0;
+    --text2: #8b8fa8;
+    --text3: #565a75;
+    --accent: #f5a623;
+    --accent2: #e8912a;
+    --blue: #4a90d9;
+    --green: #4caf7d;
+    --red: #e05555;
+    --purple: #7c6fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .logo span { color: var(--text); font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .btn { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); font-size: 13px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all .15s; font-weight: 500; }
+  .btn:hover { background: var(--bg3); border-color: rgba(255,255,255,0.2); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+  /* Layout */
+  .layout { display: flex; height: calc(100vh - 60px); }
+
+  /* Sidebar */
+  .sidebar { width: 240px; background: var(--bg2); border-right: 1px solid var(--border); padding: 1.5rem 1rem; flex-shrink: 0; overflow-y: auto; }
+  .sidebar-title { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; padding: 0 8px; }
+  .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text2); transition: all .15s; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(245,166,35,0.12); color: var(--accent); font-weight: 500; }
+  .nav-count { font-size: 11px; background: var(--bg3); padding: 2px 7px; border-radius: 10px; color: var(--text3); }
+  .nav-item.active .nav-count { background: rgba(245,166,35,0.2); color: var(--accent); }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  /* Main */
+  .main { flex: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 700; color: var(--text); }
+  .stat-val.accent { color: var(--accent); }
+  .stat-val.green { color: var(--green); }
+  .stat-val.blue { color: var(--blue); }
+
+  /* Search & Filter */
+  .toolbar { display: flex; gap: 10px; margin-bottom: 1.25rem; align-items: center; flex-wrap: wrap; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input { width: 100%; padding: 8px 12px 8px 36px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; transition: border-color .15s; }
+  .search-wrap input:focus { border-color: rgba(245,166,35,0.4); }
+  .search-wrap input::placeholder { color: var(--text3); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 15px; }
+  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'Noto Sans KR', sans-serif; }
+  .pill:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .pill.active { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.4); color: var(--accent); font-weight: 500; }
+  .lang-toggle { display: flex; gap: 4px; }
+  .lang-btn { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'Noto Sans KR', sans-serif; }
+  .lang-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 500; }
+
+  /* FAQ List */
+  .faq-count { font-size: 13px; color: var(--text3); margin-bottom: 10px; }
+  .faq-count span { color: var(--text); font-weight: 500; }
+  .faq-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; transition: border-color .15s; }
+  .faq-item:hover { border-color: rgba(255,255,255,0.15); }
+  .faq-item.expanded { border-color: rgba(245,166,35,0.3); }
+  .faq-header { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .faq-header-left { flex: 1; min-width: 0; }
+  .faq-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: .03em; }
+  .badge-billing { background: rgba(74,144,217,0.15); color: #6ab0f5; border: 1px solid rgba(74,144,217,0.3); }
+  .badge-ban { background: rgba(224,85,85,0.15); color: #f08080; border: 1px solid rgba(224,85,85,0.3); }
+  .badge-acc { background: rgba(124,111,255,0.15); color: #a89fff; border: 1px solid rgba(124,111,255,0.3); }
+  .badge-tech { background: rgba(76,175,125,0.15); color: #7dd4a8; border: 1px solid rgba(76,175,125,0.3); }
+  .badge-game { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
+  .badge-other { background: rgba(139,143,168,0.15); color: var(--text2); border: 1px solid rgba(139,143,168,0.3); }
+  .badge-pub { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
+  .badge-draft { background: rgba(139,143,168,0.1); color: var(--text3); border: 1px solid var(--border); }
+  .faq-title { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .faq-preview { font-size: 12px; color: var(--text3); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .faq-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .chevron { color: var(--text3); font-size: 12px; transition: transform .2s; }
+  .faq-item.expanded .chevron { transform: rotate(180deg); }
+  .has-media { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 4px; }
+
+  /* FAQ Body */
+  .faq-body { border-top: 1px solid var(--border); padding: 16px; display: none; }
+  .faq-item.expanded .faq-body { display: block; }
+  .lang-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .lang-tab { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; transition: all .15s; font-family: 'Noto Sans KR', sans-serif; }
+  .lang-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 500; }
+  .faq-content { display: none; }
+  .faq-content.active { display: block; }
+  .content-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+  .content-body { font-size: 13px; color: var(--text2); line-height: 1.8; white-space: pre-wrap; word-break: break-word; margin-bottom: 12px; }
+  .media-section { margin-top: 12px; }
+  .media-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+  .video-wrap { position: relative; width: 100%; max-width: 560px; padding-bottom: 31.5%; border-radius: 8px; overflow: hidden; background: #000; margin-bottom: 10px; }
+  .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+  .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .img-thumb { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16/9; background: var(--bg3); cursor: pointer; }
+  .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .15s; }
+  .img-thumb:hover img { opacity: .8; }
+  .faq-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .btn-edit { background: rgba(74,144,217,0.1); border-color: rgba(74,144,217,0.3); color: var(--blue); }
+  .btn-edit:hover { background: rgba(74,144,217,0.2); }
+  .btn-helpshift { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: var(--accent); }
+  .btn-helpshift:hover { background: rgba(245,166,35,0.2); }
+  .btn-delete { background: rgba(224,85,85,0.1); border-color: rgba(224,85,85,0.3); color: var(--red); }
+  .btn-delete:hover { background: rgba(224,85,85,0.2); }
+
+  /* Loading */
+  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--text3); }
+
+  /* Empty */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 14px; }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 1.5rem; padding-bottom: 2rem; }
+  .page-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 13px; cursor: pointer; transition: all .15s; font-family: 'Noto Sans KR', sans-serif; }
+  .page-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+  .page-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; padding: 1.5rem; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .modal-close { background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer; padding: 4px; }
+  .modal-close:hover { color: var(--text); }
+  .form-group { margin-bottom: 1rem; }
+  .form-label { font-size: 12px; font-weight: 700; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .lang-dot.en { background: var(--blue); }
+  .lang-dot.ja { background: #f080a0; }
+  .lang-dot.ko { background: var(--green); }
+  .form-input { width: 100%; padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: rgba(245,166,35,0.4); }
+  .form-textarea { width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; resize: vertical; min-height: 100px; line-height: 1.6; transition: border-color .15s; }
+  .form-textarea:focus { border-color: rgba(245,166,35,0.4); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--text); z-index: 300; transform: translateY(20px); opacity: 0; transition: all .3s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(76,175,125,0.4); }
+  .toast.error { border-color: rgba(224,85,85,0.4); }
+
+  @media (max-width: 768px) {
+    .stats { grid-template-columns: repeat(2,1fr); }
+    .sidebar { display: none; }
+    .main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">PUBGM <span>FAQ 관리</span></div>
+  </div>
+  <div class="header-right">
+    <span id="last-sync" style="font-size:12px;color:var(--text3)">데이터 로딩 중...</span>
+    <button class="btn" onclick="loadData()">새로고침</button>
+    <button class="btn btn-primary" onclick="openAddModal()">+ 신규 FAQ</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-title">카테고리</div>
+    <div class="nav-item active" onclick="filterCategory('all', this)">
+      전체 <span class="nav-count" id="count-all">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('결제', this)">
+      결제 및 환불 <span class="nav-count" id="count-billing">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('계정 제재', this)">
+      계정 제재 <span class="nav-count" id="count-ban">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('계정관련', this)">
+      계정관련 <span class="nav-count" id="count-acc">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('기술지원', this)">
+      기술지원 <span class="nav-count" id="count-tech">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('게임관련', this)">
+      게임관련 <span class="nav-count" id="count-game">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('신고하기', this)">
+      신고하기 <span class="nav-count" id="count-report">0</span>
+    </div>
+    <div class="nav-item" onclick="filterCategory('기타', this)">
+      기타 <span class="nav-count" id="count-other">0</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">상태</div>
+    <div class="nav-item" onclick="filterStatus('published', this)">
+      게시됨 <span class="nav-count" id="count-pub">0</span>
+    </div>
+    <div class="nav-item" onclick="filterStatus('draft', this)">
+      초안 <span class="nav-count" id="count-draft">0</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">미디어</div>
+    <div class="nav-item" onclick="filterMedia('video', this)">
+      동영상 있음 <span class="nav-count" id="count-video">0</span>
+    </div>
+    <div class="nav-item" onclick="filterMedia('image', this)">
+      이미지 있음 <span class="nav-count" id="count-image">0</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">전체 FAQ</div>
+        <div class="stat-val accent" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">게시됨</div>
+        <div class="stat-val green" id="stat-pub">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">동영상 포함</div>
+        <div class="stat-val blue" id="stat-video">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">이미지 포함</div>
+        <div class="stat-val" id="stat-image">0</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="FAQ 검색..." oninput="onSearch()">
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('ko', this)">한국어</button>
+        <button class="lang-btn" onclick="setLang('en', this)">English</button>
+        <button class="lang-btn" onclick="setLang('ja', this)">日本語</button>
+      </div>
+    </div>
+
+    <div class="faq-count">총 <span id="filtered-count">0</span>개의 FAQ</div>
+
+    <div id="faq-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Helpshift FAQ 데이터를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">FAQ 수정</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot en"></span> 영어 제목</div>
+      <input type="text" class="form-input" id="edit-en-title" placeholder="English title">
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot en"></span> 영어 내용</div>
+      <textarea class="form-textarea" id="edit-en-body" placeholder="English answer"></textarea>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot ja"></span> 일본어 제목</div>
+      <input type="text" class="form-input" id="edit-ja-title" placeholder="日本語タイトル">
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot ja"></span> 일본어 내용</div>
+      <textarea class="form-textarea" id="edit-ja-body" placeholder="日本語の回答"></textarea>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot ko"></span> 한국어 제목</div>
+      <input type="text" class="form-input" id="edit-ko-title" placeholder="한국어 제목">
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="lang-dot ko"></span> 한국어 내용</div>
+      <textarea class="form-textarea" id="edit-ko-body" placeholder="한국어 답변"></textarea>
+    </div>
+    <div class="form-group">
+      <div class="form-label">YouTube URL</div>
+      <input type="text" class="form-input" id="edit-youtube" placeholder="https://www.youtube.com/embed/...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn btn-helpshift" onclick="saveToHelpshift()">Helpshift 등록</button>
+      <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID = '1jtc2TgQTpwHI_KUVQ5ztwomnPWoCVPO_wX7Cr6AjRBM';
+const SHEET_NAME = 'PUBGM_FAQ_Master';
+const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+let allFaqs = [];
+let filteredFaqs = [];
+let currentLang = 'ko';
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let currentCategory = 'all';
+let currentStatus = '';
+let currentMedia = '';
+let searchQuery = '';
+let editingIdx = null;
+
+async function loadData() {
+  document.getElementById('faq-list').innerHTML = `<div class="loading"><div class="spinner"></div><div class="loading-text">데이터 불러오는 중...</div></div>`;
+  try {
+    const res = await fetch(API_URL);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?$/, ''));
+    const rows = json.table.rows;
+    const cols = json.table.cols.map(c => c.label);
+
+    allFaqs = rows.map(row => {
+      const obj = {};
+      cols.forEach((col, i) => { obj[col] = row.c[i]?.v || ''; });
+      return obj;
+    }).filter(f => f.faq_id);
+
+    updateStats();
+    updateCounts();
+    applyFilters();
+    document.getElementById('last-sync').textContent = '마지막 동기화: ' + new Date().toLocaleTimeString('ko-KR');
+  } catch(e) {
+    document.getElementById('faq-list').innerHTML = `<div class="empty">데이터를 불러오지 못했어요. 새로고침 해주세요.</div>`;
+  }
+}
+
+function getCategoryBadge(faq) {
+  const id = (faq.faq_id || '').toLowerCase();
+  const ko = (faq.ko_title || faq.en_title || '').toLowerCase();
+  if (id.includes('billing') || ko.includes('결제') || ko.includes('환불')) return ['결제', 'billing'];
+  if (id.includes('ban') || ko.includes('제재') || ko.includes('정지')) return ['계정 제재', 'ban'];
+  if (id.includes('acc') || ko.includes('계정') || ko.includes('로그인')) return ['계정관련', 'acc'];
+  if (id.includes('tech') || ko.includes('기술') || ko.includes('설치') || ko.includes('오류')) return ['기술지원', 'tech'];
+  if (id.includes('in-game') || id.includes('game') || ko.includes('게임') || ko.includes('아이템')) return ['게임관련', 'game'];
+  if (id.includes('report') || ko.includes('신고')) return ['신고하기', 'report'];
+  return ['기타', 'other'];
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allFaqs.length;
+  document.getElementById('stat-pub').textContent = allFaqs.filter(f => f.publish_status === 'published').length;
+  document.getElementById('stat-video').textContent = allFaqs.filter(f => f.youtube_url || (f.image_urls||'').includes('youtube')).length;
+  document.getElementById('stat-image').textContent = allFaqs.filter(f => f.image_urls && !f.image_urls.includes('youtube')).length;
+}
+
+function updateCounts() {
+  const counts = { all: allFaqs.length, billing:0, ban:0, acc:0, tech:0, game:0, report:0, other:0 };
+  allFaqs.forEach(f => { const [,key] = getCategoryBadge(f); counts[key] = (counts[key]||0)+1; });
+  Object.entries(counts).forEach(([k,v]) => { const el = document.getElementById('count-'+k); if(el) el.textContent = v; });
+  document.getElementById('count-pub').textContent = allFaqs.filter(f=>f.publish_status==='published').length;
+  document.getElementById('count-draft').textContent = allFaqs.filter(f=>f.publish_status!=='published').length;
+  document.getElementById('count-video').textContent = allFaqs.filter(f=>f.youtube_url||(f.image_urls||'').includes('youtube')).length;
+  document.getElementById('count-image').textContent = allFaqs.filter(f=>f.image_urls&&!f.image_urls.includes('youtube')).length;
+}
+
+function applyFilters() {
+  filteredFaqs = allFaqs.filter(f => {
+    const [cat, key] = getCategoryBadge(f);
+    if (currentCategory !== 'all' && cat !== currentCategory) return false;
+    if (currentStatus && f.publish_status !== currentStatus) return false;
+    if (currentMedia === 'video' && !f.youtube_url && !(f.image_urls||'').includes('youtube')) return false;
+    if (currentMedia === 'image' && (!f.image_urls || f.image_urls.includes('youtube'))) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const searchIn = [f.ko_title, f.en_title, f.ja_title, f.ko_body, f.en_body].join(' ').toLowerCase();
+      if (!searchIn.includes(q)) return false;
+    }
+    return true;
+  });
+  document.getElementById('filtered-count').textContent = filteredFaqs.length;
+  currentPage = 1;
+  renderFaqs();
+}
+
+function renderFaqs() {
+  const list = document.getElementById('faq-list');
+  if (!filteredFaqs.length) { list.innerHTML = '<div class="empty">검색 결과가 없어요</div>'; document.getElementById('pagination').innerHTML=''; return; }
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filteredFaqs.slice(start, start+PAGE_SIZE);
+  list.innerHTML = page.map((f, i) => renderFaqItem(f, start+i)).join('');
+  renderPagination();
+}
+
+function renderFaqItem(f, idx) {
+  const [cat, key] = getCategoryBadge(f);
+  const title = currentLang==='ko' ? (f.ko_title||f.en_title) : currentLang==='ja' ? (f.ja_title||f.en_title) : f.en_title;
+  const body = currentLang==='ko' ? (f.ko_body||f.en_body) : currentLang==='ja' ? (f.ja_body||f.en_body) : f.en_body;
+  const isPub = f.publish_status === 'published';
+  const hasVideo = f.youtube_url || (f.image_urls||'').includes('youtube');
+  const hasImage = f.image_urls && f.image_urls.split(',').some(u=>!u.includes('youtube')&&u.trim());
+  const mediaIndicators = [hasVideo?'▶ 동영상':'', hasImage?'🖼 이미지':''].filter(Boolean).join(' · ');
+
+  const youtubeUrl = f.youtube_url || (f.image_urls||'').split(',').find(u=>u.includes('youtube'))||'';
+  const imageUrls = (f.image_urls||'').split(',').filter(u=>u.trim()&&!u.includes('youtube')).map(u=>u.trim());
+  const videoHtml = youtubeUrl ? `<div class="media-section"><div class="media-label">동영상</div><div class="video-wrap"><iframe src="${youtubeUrl.trim()}" allowfullscreen></iframe></div></div>` : '';
+  const imageHtml = imageUrls.length ? `<div class="media-section"><div class="media-label">이미지</div><div class="img-grid">${imageUrls.map(u=>`<div class="img-thumb"><img src="${u}" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`).join('')}</div></div>` : '';
+
+  return `<div class="faq-item" id="faq-${idx}">
+    <div class="faq-header" onclick="toggleFaq(${idx})">
+      <div class="faq-header-left">
+        <div class="faq-meta">
+          <span class="badge badge-${key}">${cat}</span>
+          <span class="badge ${isPub?'badge-pub':'badge-draft'}">${isPub?'게시됨':'초안'}</span>
+          ${mediaIndicators ? `<span class="has-media">${mediaIndicators}</span>` : ''}
+        </div>
+        <div class="faq-title">${title||'(제목 없음)'}</div>
+        <div class="faq-preview">${(body||'').substring(0,80)}${body&&body.length>80?'...':''}</div>
+      </div>
+      <div class="faq-header-right">
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="faq-body">
+      <div class="lang-tabs">
+        <button class="lang-tab ${currentLang==='ko'?'active':''}" onclick="switchLangTab(${idx},'ko',this)">한국어</button>
+        <button class="lang-tab ${currentLang==='en'?'active':''}" onclick="switchLangTab(${idx},'en',this)">English</button>
+        <button class="lang-tab ${currentLang==='ja'?'active':''}" onclick="switchLangTab(${idx},'ja',this)">日本語</button>
+      </div>
+      <div class="faq-content ${currentLang==='ko'?'active':''}" id="content-${idx}-ko">
+        <div class="content-title">${f.ko_title||'(제목 없음)'}</div>
+        <div class="content-body">${f.ko_body||'(내용 없음)'}</div>
+        ${videoHtml}${imageHtml}
+      </div>
+      <div class="faq-content ${currentLang==='en'?'active':''}" id="content-${idx}-en">
+        <div class="content-title">${f.en_title||'(No title)'}</div>
+        <div class="content-body">${f.en_body||'(No content)'}</div>
+        ${videoHtml}${imageHtml}
+      </div>
+      <div class="faq-content ${currentLang==='ja'?'active':''}" id="content-${idx}-ja">
+        <div class="content-title">${f.ja_title||'(タイトルなし)'}</div>
+        <div class="content-body">${f.ja_body||'(内容なし)'}</div>
+        ${videoHtml}${imageHtml}
+      </div>
+      <div class="faq-actions">
+        <button class="btn btn-edit" onclick="openEditModal(${idx})">수정</button>
+        <button class="btn btn-helpshift" onclick="openHelpshift('${f.faq_id}')">Helpshift 보기</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleFaq(idx) {
+  const el = document.getElementById('faq-'+idx);
+  el.classList.toggle('expanded');
+}
+
+function switchLangTab(idx, lang, btn) {
+  const body = document.getElementById('faq-'+idx).querySelector('.faq-body');
+  body.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('active'));
+  body.querySelectorAll('.faq-content').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`content-${idx}-${lang}`).classList.add('active');
+}
+
+function setLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFaqs();
+}
+
+function filterCategory(cat, el) {
+  currentCategory = cat;
+  currentStatus = '';
+  currentMedia = '';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterStatus(status, el) {
+  currentStatus = currentStatus===status ? '' : status;
+  currentCategory = 'all';
+  currentMedia = '';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(currentStatus) el.classList.add('active');
+  applyFilters();
+}
+
+function filterMedia(media, el) {
+  currentMedia = currentMedia===media ? '' : media;
+  currentCategory = 'all';
+  currentStatus = '';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(currentMedia) el.classList.add('active');
+  applyFilters();
+}
+
+function onSearch() {
+  searchQuery = document.getElementById('search-input').value;
+  applyFilters();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredFaqs.length/PAGE_SIZE);
+  if(total<=1){document.getElementById('pagination').innerHTML='';return;}
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>◀</button>`;
+  for(let i=1;i<=total;i++){
+    if(i===1||i===total||Math.abs(i-currentPage)<=2) html+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if(Math.abs(i-currentPage)===3) html+=`<span style="color:var(--text3);padding:0 4px">...</span>`;
+  }
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>▶</button>`;
+  document.getElementById('pagination').innerHTML=html;
+}
+
+function goPage(p) {
+  const total = Math.ceil(filteredFaqs.length/PAGE_SIZE);
+  if(p<1||p>total)return;
+  currentPage=p;
+  renderFaqs();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openEditModal(idx) {
+  editingIdx = idx;
+  const f = filteredFaqs[idx];
+  document.getElementById('modal-title').textContent = 'FAQ 수정';
+  document.getElementById('edit-en-title').value = f.en_title||'';
+  document.getElementById('edit-en-body').value = f.en_body||'';
+  document.getElementById('edit-ja-title').value = f.ja_title||'';
+  document.getElementById('edit-ja-body').value = f.ja_body||'';
+  document.getElementById('edit-ko-title').value = f.ko_title||'';
+  document.getElementById('edit-ko-body').value = f.ko_body||'';
+  document.getElementById('edit-youtube').value = f.youtube_url||'';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function openAddModal() {
+  editingIdx = null;
+  document.getElementById('modal-title').textContent = '신규 FAQ 추가';
+  ['en-title','en-body','ja-title','ja-body','ko-title','ko-body','youtube'].forEach(id=>{
+    document.getElementById('edit-'+id).value='';
+  });
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+function saveEdit() {
+  showToast('저장됐어요! Google Sheets에 반영하려면 n8n을 실행해주세요.', 'success');
+  closeModal();
+}
+
+function saveToHelpshift() {
+  showToast('Helpshift 등록 기능은 n8n 워크플로우와 연결 후 사용 가능해요.', 'success');
+  closeModal();
+}
+
+function openHelpshift(faqId) {
+  window.open(`https://pubgmobile.helpshift.com/hc/ko/`, '_blank');
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(()=>t.className='toast', 3000);
+}
+
+loadData();
+</script>
+</body>
+</html>
