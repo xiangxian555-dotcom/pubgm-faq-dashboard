@@ -271,7 +271,7 @@ async function loadData() {
   try {
     const res = await fetch(API_URL + '&t=' + Date.now());
     const text = await res.text();
-    const clean = text.replace(/^[^\(]+\(/, '').replace(/\);?\s*$/, '');
+    const clean = text.replace(/^\/\*O_o\*\//, '').replace(/google\.visualization\.Query\.setResponse\(/, '').replace(/\);?\s*$/, '');
     const json = JSON.parse(clean);
     const cols = json.table.cols.map(c => c.label);
     allFaqs = (json.table.rows || []).map(row => {
