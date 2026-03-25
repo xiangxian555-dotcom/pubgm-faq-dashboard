@@ -68,11 +68,12 @@
   .faq-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
   .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
   .badge-결제 { background: rgba(74,144,217,0.15); color: #6ab0f5; border: 1px solid rgba(74,144,217,0.3); }
-  .badge-제재 { background: rgba(224,85,85,0.15); color: #f08080; border: 1px solid rgba(224,85,85,0.3); }
-  .badge-계정 { background: rgba(124,111,255,0.15); color: #a89fff; border: 1px solid rgba(124,111,255,0.3); }
-  .badge-기술 { background: rgba(76,175,125,0.15); color: #7dd4a8; border: 1px solid rgba(76,175,125,0.3); }
   .badge-게임 { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
   .badge-신고 { background: rgba(224,85,85,0.1); color: #ffaaaa; border: 1px solid rgba(224,85,85,0.2); }
+  .badge-계정 { background: rgba(124,111,255,0.15); color: #a89fff; border: 1px solid rgba(124,111,255,0.3); }
+  .badge-support { background: rgba(76,175,125,0.15); color: #7dd4a8; border: 1px solid rgba(76,175,125,0.3); }
+  .badge-라이선스 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
+  .badge-사업자 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
   .badge-기타 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
   .badge-published { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
   .badge-draft { background: rgba(139,143,168,0.08); color: var(--text3); border: 1px solid var(--border); }
@@ -98,7 +99,6 @@
   .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .img-thumb { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16/9; background: var(--bg3); }
   .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .img-thumb img:hover { opacity: .85; }
   .faq-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   .btn-edit { background: rgba(74,144,217,0.1); border-color: rgba(74,144,217,0.3); color: var(--blue); }
   .btn-hs { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: var(--accent); }
@@ -156,11 +156,12 @@
     <div class="sidebar-title">카테고리</div>
     <div class="nav-item active" data-filter-type="category" data-filter-val="all">전체 <span class="nav-count" id="cnt-all">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="결제">결제 및 환불 <span class="nav-count" id="cnt-결제">0</span></div>
-    <div class="nav-item" data-filter-type="category" data-filter-val="제재">계정 제재 <span class="nav-count" id="cnt-제재">0</span></div>
-    <div class="nav-item" data-filter-type="category" data-filter-val="계정">계정관련 <span class="nav-count" id="cnt-계정">0</span></div>
-    <div class="nav-item" data-filter-type="category" data-filter-val="기술">기술지원 <span class="nav-count" id="cnt-기술">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="게임">게임관련 <span class="nav-count" id="cnt-게임">0</span></div>
-    <div class="nav-item" data-filter-type="category" data-filter-val="신고">신고하기 <span class="nav-count" id="cnt-신고">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="신고">신고 및 차단 <span class="nav-count" id="cnt-신고">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="계정">계정 관련 <span class="nav-count" id="cnt-계정">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="support">PUBGM Support <span class="nav-count" id="cnt-support">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="라이선스">오픈소스 라이선스 <span class="nav-count" id="cnt-라이선스">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="사업자">사업자 정보 <span class="nav-count" id="cnt-사업자">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="기타">기타 <span class="nav-count" id="cnt-기타">0</span></div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-title">상태</div>
@@ -226,6 +227,28 @@ const SHEET_ID = '1jtc2TgQTpwHI_KUVQ5ztwomnPWoCVPO_wX7Cr6AjRBM';
 const SHEET_NAME = 'PUBGM_FAQ_Master';
 const API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME);
 
+// ✅ 수정 1: section_num 기반 카테고리 매핑 (확정된 섹션 ID)
+const SECTION_MAP = {
+  '8':  '결제',
+  '11': '게임',
+  '14': '신고',
+  '15': '계정',
+  '17': 'support',
+  '32': '라이선스',
+  '60': '사업자'
+};
+
+const CATEGORY_LABELS = {
+  '결제': '결제 및 환불',
+  '게임': '게임관련',
+  '신고': '신고 및 차단',
+  '계정': '계정 관련',
+  'support': 'PUBGM Support',
+  '라이선스': '오픈소스 라이선스',
+  '사업자': '사업자 정보',
+  '기타': '기타'
+};
+
 let allFaqs = [];
 let filteredFaqs = [];
 let currentLang = 'ko';
@@ -237,20 +260,10 @@ let activeMedia = '';
 let searchQuery = '';
 let editingIdx = null;
 
-// Section ID to category mapping based on actual Helpshift tags
+// ✅ 수정 1: section_num 기반으로 카테고리 결정
 function getCategory(faq) {
-  const sid = (faq.section_id || '').toLowerCase();
-  const fid = (faq.faq_id || '').toLowerCase();
-  const ko = (faq.ko_title || faq.en_title || '').toLowerCase();
-  const en = (faq.en_title || '').toLowerCase();
-
-  if (sid.includes('billing') || fid.includes('billing') || ko.includes('결제') || ko.includes('환불') || ko.includes('청약') || ko.includes('구매') || en.includes('billing') || en.includes('refund') || en.includes('purchase')) return '결제';
-  if (fid.includes('ban') || ko.includes('정지') || ko.includes('제재') || ko.includes('ban') || en.includes('ban') || en.includes('suspend')) return '제재';
-  if (fid.includes('acc') || ko.includes('계정') || ko.includes('로그인') || ko.includes('비밀번호') || ko.includes('연동') || en.includes('account') || en.includes('login') || en.includes('password')) return '계정';
-  if (fid.includes('tech') || ko.includes('오류') || ko.includes('설치') || ko.includes('실행') || ko.includes('튕') || ko.includes('네트워크') || ko.includes('업데이트') || en.includes('error') || en.includes('install') || en.includes('crash') || en.includes('tech')) return '기술';
-  if (fid.includes('report') || ko.includes('신고') || ko.includes('핵') || ko.includes('욕설') || en.includes('report') || en.includes('hack') || en.includes('cheat')) return '신고';
-  if (fid.includes('in-game') || fid.includes('game') || ko.includes('게임') || ko.includes('아이템') || ko.includes('uc') || ko.includes('배틀패스') || ko.includes('랭크') || ko.includes('이벤트') || ko.includes('미션') || en.includes('game') || en.includes('item') || en.includes('rank') || en.includes('event')) return '게임';
-  return '기타';
+  const sectionNum = (faq.section_num || '').trim();
+  return SECTION_MAP[sectionNum] || '기타';
 }
 
 async function loadData() {
@@ -293,7 +306,7 @@ function updateStats() {
 }
 
 function updateCounts() {
-  const cats = ['결제','제재','계정','기술','게임','신고','기타'];
+  const cats = ['결제','게임','신고','계정','support','라이선스','사업자','기타'];
   const counts = {};
   cats.forEach(c => counts[c] = 0);
   allFaqs.forEach(f => { const c = getCategory(f); counts[c] = (counts[c] || 0) + 1; });
@@ -311,6 +324,7 @@ function updateCounts() {
   }).length;
 }
 
+// ✅ 수정 2: 검색 버그 수정 - searchQuery 동기화 문제 해결
 function applyFilters() {
   const q = searchQuery.trim().toLowerCase();
   filteredFaqs = allFaqs.filter(f => {
@@ -363,6 +377,7 @@ function renderFaqs() {
 
 function buildFaqHtml(f, idx) {
   const cat = getCategory(f);
+  const catLabel = CATEGORY_LABELS[cat] || cat;
   const title = getTitle(f);
   const body = getBody(f);
   const isPub = f.publish_status === 'published';
@@ -385,7 +400,7 @@ function buildFaqHtml(f, idx) {
     '<div class="faq-header" onclick="toggleFaq(' + idx + ')">' +
       '<div class="faq-header-left">' +
         '<div class="faq-meta">' +
-          '<span class="badge badge-' + cat + '">' + cat + '</span>' +
+          '<span class="badge badge-' + cat + '">' + catLabel + '</span>' +
           '<span class="badge badge-' + (isPub ? 'published' : 'draft') + '">' + (isPub ? '게시됨' : '초안') + '</span>' +
           (mediaTags ? '<span class="media-tag">' + mediaTags + '</span>' : '') +
         '</div>' +
@@ -481,12 +496,13 @@ function showToast(msg, type) {
   setTimeout(() => { t.className = 'toast'; }, 3000);
 }
 
-// Event listeners
+// ✅ 수정 2: 검색 버그 수정
 document.getElementById('search-input').addEventListener('input', function() {
   searchQuery = this.value;
   applyFilters();
 });
 
+// ✅ 수정 3: 카테고리 클릭 버그 수정 - 이벤트 위임 방식 개선
 document.getElementById('sidebar').addEventListener('click', function(e) {
   const item = e.target.closest('.nav-item');
   if (!item) return;
@@ -494,17 +510,46 @@ document.getElementById('sidebar').addEventListener('click', function(e) {
   const val = item.dataset.filterVal;
   if (!type || !val) return;
 
+  // 모든 nav-item active 제거
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   if (type === 'category') {
-    if (activeCategory === val && val !== 'all') { activeCategory = 'all'; document.querySelector('[data-filter-val="all"]').classList.add('active'); }
-    else { activeCategory = val; activeStatus = ''; activeMedia = ''; item.classList.add('active'); }
+    // 같은 카테고리 다시 클릭 시 전체로 돌아감 (all 제외)
+    if (activeCategory === val && val !== 'all') {
+      activeCategory = 'all';
+      activeStatus = '';
+      activeMedia = '';
+      document.querySelector('[data-filter-val="all"]').classList.add('active');
+    } else {
+      activeCategory = val;
+      activeStatus = '';
+      activeMedia = '';
+      item.classList.add('active');
+    }
   } else if (type === 'status') {
-    if (activeStatus === val) { activeStatus = ''; document.querySelector('[data-filter-val="all"]').classList.add('active'); }
-    else { activeStatus = val; activeCategory = 'all'; activeMedia = ''; item.classList.add('active'); }
+    if (activeStatus === val) {
+      activeStatus = '';
+      activeCategory = 'all';
+      activeMedia = '';
+      document.querySelector('[data-filter-val="all"]').classList.add('active');
+    } else {
+      activeStatus = val;
+      activeCategory = 'all';
+      activeMedia = '';
+      item.classList.add('active');
+    }
   } else if (type === 'media') {
-    if (activeMedia === val) { activeMedia = ''; document.querySelector('[data-filter-val="all"]').classList.add('active'); }
-    else { activeMedia = val; activeCategory = 'all'; activeStatus = ''; item.classList.add('active'); }
+    if (activeMedia === val) {
+      activeMedia = '';
+      activeCategory = 'all';
+      activeStatus = '';
+      document.querySelector('[data-filter-val="all"]').classList.add('active');
+    } else {
+      activeMedia = val;
+      activeCategory = 'all';
+      activeStatus = '';
+      item.classList.add('active');
+    }
   }
   applyFilters();
 });
