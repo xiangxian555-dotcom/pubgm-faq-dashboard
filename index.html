@@ -231,17 +231,22 @@ const SHEET_ID = '1jtc2TgQTpwHI_KUVQ5ztwomnPWoCVPO_wX7Cr6AjRBM';
 const SHEET_NAME = 'PUBGM_FAQ_Master';
 const API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME);
 
-// ✅ 수정 1: section_num 기반 카테고리 매핑 (확정된 섹션 ID)
-const SECTION_MAP = {
-  '8':  '결제',
-  '11': '게임',
-  '13': '설치',
-  '14': '신고',
-  '15': '계정',
-  '16': '이벤트',
-  '17': 'support',
-  '32': '라이선스',
-  '60': '사업자'
+// ✅ 수정 1: section_id 전체 문자열 기반 카테고리 매핑
+const SECTION_ID_MAP = {
+  'pubgmobile_section_20180912114620598-0f8712abc320726': '라이선스',  // #32 오픈소스 라이선스
+  'pubgmobile_section_20180509020132628-63203837d0f45d6': '이벤트',    // #16 이벤트&기타
+  'pubgmobile_section_20180509020047357-1c6f38f6aae8814': '설치',      // #13 설치 및 실행
+  'pubgmobile_section_20180509020124229-fea360d10328f65': '계정',      // #15 계정 관련
+  'pubgmobile_section_20180509015953687-a5c52be1c630b59': '게임',      // #11 게임관련
+  'pubgmobile_section_20180420160851889-4bcdd12dd855e10': '결제',      // #8  결제 및 환불
+  'pubgmobile_section_20180515142151485-c56dcea804c1635': 'support',   // #17 PUBG Mobile Support
+  'pubgmobile_section_20201112062225326-5b8f67873b09696': '사업자',    // #60 사업자 정보
+  'pubgmobile_section_20200907051245229-67f8b576ce297a9': '신고',      // #14 신고 및 차단 (추정)
+  'pubgmobile_section_20200907051123181-b468a5e18deaf1b': '기타',
+  'pubgmobile_section_20200907051143887-efa1e973962bca1': '기타',
+  'pubgmobile_section_20200907051216345-cc980163ddae55a': '기타',
+  'pubgmobile_section_20180509020107049-9276e1e1bb99d8d': '기타',
+  'pubgmobile_section_20220422035722157-cca245dbec2c053': '기타'
 };
 
 const CATEGORY_LABELS = {
@@ -268,10 +273,10 @@ let activeMedia = '';
 let searchQuery = '';
 let editingIdx = null;
 
-// ✅ 수정 1: section_num 기반으로 카테고리 결정
+// ✅ section_id 전체 문자열로 카테고리 결정
 function getCategory(faq) {
-  const sectionNum = (faq.section_num || '').trim();
-  return SECTION_MAP[sectionNum] || '기타';
+  const sectionId = (faq.section_id || '').trim();
+  return SECTION_ID_MAP[sectionId] || '기타';
 }
 
 async function loadData() {
