@@ -71,7 +71,9 @@
   .badge-게임 { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
   .badge-신고 { background: rgba(224,85,85,0.1); color: #ffaaaa; border: 1px solid rgba(224,85,85,0.2); }
   .badge-계정 { background: rgba(124,111,255,0.15); color: #a89fff; border: 1px solid rgba(124,111,255,0.3); }
-  .badge-support { background: rgba(76,175,125,0.15); color: #7dd4a8; border: 1px solid rgba(76,175,125,0.3); }
+  .badge-설치 { background: rgba(76,175,125,0.15); color: #7dd4a8; border: 1px solid rgba(76,175,125,0.3); }
+  .badge-이벤트 { background: rgba(255,152,0,0.15); color: #ffb74d; border: 1px solid rgba(255,152,0,0.3); }
+  .badge-support { background: rgba(74,144,217,0.15); color: #6ab0f5; border: 1px solid rgba(74,144,217,0.3); }
   .badge-라이선스 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
   .badge-사업자 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
   .badge-기타 { background: rgba(139,143,168,0.12); color: var(--text2); border: 1px solid rgba(139,143,168,0.2); }
@@ -157,8 +159,10 @@
     <div class="nav-item active" data-filter-type="category" data-filter-val="all">전체 <span class="nav-count" id="cnt-all">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="결제">결제 및 환불 <span class="nav-count" id="cnt-결제">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="게임">게임관련 <span class="nav-count" id="cnt-게임">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="설치">설치 및 실행 <span class="nav-count" id="cnt-설치">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="신고">신고 및 차단 <span class="nav-count" id="cnt-신고">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="계정">계정 관련 <span class="nav-count" id="cnt-계정">0</span></div>
+    <div class="nav-item" data-filter-type="category" data-filter-val="이벤트">이벤트 & 기타 <span class="nav-count" id="cnt-이벤트">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="support">PUBGM Support <span class="nav-count" id="cnt-support">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="라이선스">오픈소스 라이선스 <span class="nav-count" id="cnt-라이선스">0</span></div>
     <div class="nav-item" data-filter-type="category" data-filter-val="사업자">사업자 정보 <span class="nav-count" id="cnt-사업자">0</span></div>
@@ -225,14 +229,16 @@
 <script>
 const SHEET_ID = '1jtc2TgQTpwHI_KUVQ5ztwomnPWoCVPO_wX7Cr6AjRBM';
 const SHEET_NAME = 'PUBGM_FAQ_Master';
-const API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=PUBGM_FAQ_Master';
+const API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME);
 
 // ✅ 수정 1: section_num 기반 카테고리 매핑 (확정된 섹션 ID)
 const SECTION_MAP = {
   '8':  '결제',
   '11': '게임',
+  '13': '설치',
   '14': '신고',
   '15': '계정',
+  '16': '이벤트',
   '17': 'support',
   '32': '라이선스',
   '60': '사업자'
@@ -241,8 +247,10 @@ const SECTION_MAP = {
 const CATEGORY_LABELS = {
   '결제': '결제 및 환불',
   '게임': '게임관련',
+  '설치': '설치 및 실행',
   '신고': '신고 및 차단',
   '계정': '계정 관련',
+  '이벤트': '이벤트 & 기타',
   'support': 'PUBGM Support',
   '라이선스': '오픈소스 라이선스',
   '사업자': '사업자 정보',
@@ -271,7 +279,7 @@ async function loadData() {
   try {
     const res = await fetch(API_URL + '&t=' + Date.now());
     const text = await res.text();
-    const clean = text.replace(/^\/\*O_o\*\//, '').replace(/google\.visualization\.Query\.setResponse\(/, '').replace(/\);?\s*$/, '');
+    const clean = text.replace(/^[^\(]+\(/, '').replace(/\);?\s*$/, '');
     const json = JSON.parse(clean);
     const cols = json.table.cols.map(c => c.label);
     allFaqs = (json.table.rows || []).map(row => {
@@ -306,7 +314,7 @@ function updateStats() {
 }
 
 function updateCounts() {
-  const cats = ['결제','게임','신고','계정','support','라이선스','사업자','기타'];
+  const cats = ['결제','게임','설치','신고','계정','이벤트','support','라이선스','사업자','기타'];
   const counts = {};
   cats.forEach(c => counts[c] = 0);
   allFaqs.forEach(f => { const c = getCategory(f); counts[c] = (counts[c] || 0) + 1; });
